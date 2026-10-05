@@ -1,7 +1,9 @@
 ---
 import type { Lang } from '../i18n/ui';
-import { useTranslations } from '../i18n/utils';
+import { localePath, useTranslations } from '../i18n/utils';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { posterUrl } from '../lib/imgur';
+import { headingFor, momentHref } from '../lib/moment-display';
 import { moments } from '../lib/moments';
 import { monthKey, monthName } from '../lib/months';
 import MomentCard from './MomentCard.astro';
@@ -21,6 +23,38 @@ const grouped = months.map((month) => ({
   month,
   items: yearMoments.filter((moment) => moment.date.startsWith(month)),
 }));
+
+const site = Astro.site ?? Astro.url;
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `${year} · ${t('site.title')}`,
+    description: `${year} · ${t('site.description')}`,
+    url: new URL(localePath(lang, `/${year}`), site).href,
+    inLanguage: lang,
+    hasPart: yearMoments.map((moment) => ({
+      '@type': 'VideoObject',
+      name: headingFor(moment, lang),
+      url: new URL(momentHref(moment, lang), site).href,
+      thumbnailUrl: posterUrl(moment.id),
+      uploadDate: `${moment.date}T00:00:00Z`,
+    })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: t('nav.home'),
+        item: new URL(localePath(lang, '/'), site).href,
+      },
+      { '@type': 'ListItem', position: 2, name: year },
+    ],
+  },
+];
 ---
 
 <BaseLayout
@@ -30,6 +64,7 @@ const grouped = months.map((month) => ({
   years={years}
   activeYear={year}
   months={months}
+  schema={schema}
 >
   <h1 class="text-lg font-semibold">{year}</h1>
   <div class="mt-4 space-y-6">

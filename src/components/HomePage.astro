@@ -1,8 +1,9 @@
 ---
 import type { Lang } from '../i18n/ui';
-import { useTranslations } from '../i18n/utils';
+import { localePath, useTranslations } from '../i18n/utils';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { moments } from '../lib/moments';
+import { ogHomePath } from '../lib/og';
 import { allPairingIds } from '../lib/pairings';
 import PairingCard from './PairingCard.astro';
 
@@ -14,6 +15,14 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 
 const years = [...new Set(moments.map((moment) => moment.date.slice(0, 4)))];
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: t('site.title'),
+  description: t('site.description'),
+  url: new URL(localePath(lang, '/'), Astro.site ?? Astro.url).href,
+  inLanguage: lang,
+};
 ---
 
 <BaseLayout
@@ -21,6 +30,8 @@ const years = [...new Set(moments.map((moment) => moment.date.slice(0, 4)))];
   lang={lang}
   years={years}
   pairings={allPairingIds}
+  ogImage={ogHomePath(lang)}
+  schema={schema}
 >
   <div class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-5">
     {allPairingIds.map((id) => <PairingCard pairing={id} lang={lang} />)}
