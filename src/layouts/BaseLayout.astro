@@ -4,7 +4,7 @@ import MobileNav from '../components/MobileNav.tsx';
 import Search from '../components/Search.tsx';
 import Sidebar from '../components/Sidebar.astro';
 import ThemeToggle from '../components/ThemeToggle.tsx';
-import { languages, type Lang } from '../i18n/ui';
+import { defaultLang, languages, type Lang } from '../i18n/ui';
 import { asLang, localePath, stripLocale, useTranslations } from '../i18n/utils';
 import { monthKey, monthName } from '../lib/months';
 import type { Pairing } from '../lib/moment-schema';
@@ -21,6 +21,8 @@ interface Props {
   months?: string[];
   lang?: Lang;
   robots?: string;
+  ogImage?: string;
+  schema?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 const {
@@ -39,7 +41,11 @@ const path = stripLocale(Astro.url.pathname);
 const site = Astro.site ?? Astro.url;
 const canonical = new URL(localePath(lang, path), site).href;
 const description = Astro.props.description ?? t('site.description');
-const ogImage = new URL(asset('og.png'), site).href;
+const ogImage = new URL(asset(Astro.props.ogImage ?? 'og.png'), site).href;
+const feedUrl = new URL(asset(lang === defaultLang ? 'rss.xml' : `${lang}/rss.xml`), site).href;
+const jsonLd = Astro.props.schema
+  ? JSON.stringify(Astro.props.schema).replace(/</g, '\\u003c')
+  : undefined;
 const ogLocales: Record<Lang, string> = { en: 'en_US', ko: 'ko_KR', zh: 'zh_CN' };
 const localeUrls = Object.fromEntries(
   (Object.keys(languages) as Lang[]).map((code) => [code, localePath(code, path)]),
@@ -57,6 +63,7 @@ const localeUrls = Object.fromEntries(
     <meta name="description" content={description} />
     {robots && <meta name="robots" content={robots} />}
     <link rel="canonical" href={canonical} />
+    <link rel="alternate" type="application/rss+xml" title={t('site.title')} href={feedUrl} />
     <meta property="og:type" content={Astro.props.type ?? 'website'} />
     <meta property="og:site_name" content={t('site.title')} />
     <meta property="og:title" content={title} />
@@ -71,10 +78,12 @@ const localeUrls = Object.fromEntries(
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={title} />
     {
       (Object.keys(languages) as Lang[]).map((code) => (
         <link
@@ -85,6 +94,7 @@ const localeUrls = Object.fromEntries(
       ))
     }
     <link rel="alternate" hreflang="x-default" href={new URL(localePath('en', path), site).href} />
+    {jsonLd && <script type="application/ld+json" is:inline set:html={jsonLd} />}
     <script is:inline>
       var theme = 'system';
       try {

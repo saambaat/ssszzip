@@ -1,6 +1,6 @@
 ---
 import type { Lang } from '../i18n/ui';
-import { useTranslations } from '../i18n/utils';
+import { localePath, useTranslations } from '../i18n/utils';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { moments } from '../lib/moments';
 import type { Pairing } from '../lib/moment-schema';
@@ -18,6 +18,32 @@ const t = useTranslations(lang);
 const pairing = resolvePairing(pairingId, lang);
 const pairingMoments = moments.filter((moment) => moment.pairing === pairingId);
 const years = [...new Set(pairingMoments.map((moment) => moment.date.slice(0, 4)))];
+
+const site = Astro.site ?? Astro.url;
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `${pairing.name} · ${t('site.title')}`,
+    description: pairing.description,
+    url: new URL(localePath(lang, `/${pairingId}`), site).href,
+    inLanguage: lang,
+    about: pairing.members.map((name) => ({ '@type': 'Person', name })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: t('nav.home'),
+        item: new URL(localePath(lang, '/'), site).href,
+      },
+      { '@type': 'ListItem', position: 2, name: pairing.name },
+    ],
+  },
+];
 ---
 
 <BaseLayout
@@ -26,6 +52,7 @@ const years = [...new Set(pairingMoments.map((moment) => moment.date.slice(0, 4)
   lang={lang}
   years={years}
   activePairing={pairingId}
+  schema={schema}
 >
   <h1 class="text-lg font-semibold">{pairing.name}</h1>
   <p class="mt-1 text-sm text-muted-foreground">

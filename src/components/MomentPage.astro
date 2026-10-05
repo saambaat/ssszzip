@@ -4,10 +4,13 @@ import type { Lang } from '../i18n/ui';
 import { localePath, useTranslations } from '../i18n/utils';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { pageUrl, posterUrl, videoUrl } from '../lib/imgur';
+import { momentHref } from '../lib/moment-display';
 import { resolveText, type Moment } from '../lib/moment-schema';
 import { moments } from '../lib/moments';
+import { ogMomentPath } from '../lib/og';
 import { resolvePairing } from '../lib/pairings';
 import { formatDate } from '../lib/months';
+import ShareButton from './ShareButton.tsx';
 
 interface Props {
   moment: Moment;
@@ -28,8 +31,35 @@ const pairing = resolvePairing(moment.pairing, lang);
 const description = `${[heading, pairing.name].join(' · ')} — ${t('site.description')}`;
 
 const backHref = localePath(lang, `/${year}`);
+const shareUrl = new URL(momentHref(moment, lang), Astro.site ?? Astro.url).href;
+const homeUrl = new URL(localePath(lang, '/'), Astro.site ?? Astro.url).href;
+const yearUrl = new URL(backHref, Astro.site ?? Astro.url).href;
 const linkClass =
   'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground';
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    name: heading,
+    description,
+    thumbnailUrl: posterUrl(moment.id),
+    uploadDate: `${moment.date}T00:00:00Z`,
+    contentUrl: videoUrl(moment.id),
+    url: shareUrl,
+    inLanguage: lang,
+    publisher: { '@type': 'Organization', name: t('site.title') },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: t('nav.home'), item: homeUrl },
+      { '@type': 'ListItem', position: 2, name: year, item: yearUrl },
+      { '@type': 'ListItem', position: 3, name: heading },
+    ],
+  },
+];
 ---
 
 <BaseLayout
@@ -39,6 +69,8 @@ const linkClass =
   lang={lang}
   years={years}
   activeYear={year}
+  ogImage={ogMomentPath(moment, lang)}
+  schema={schema}
 >
   <article class="mx-auto flex max-w-2xl flex-col">
     <a
@@ -66,10 +98,19 @@ const linkClass =
         <h1 class="text-lg font-semibold">{heading}</h1>
         {sub && <p class="mt-1 text-sm text-muted-foreground">{sub}</p>}
       </div>
-      <a href={pageUrl(moment.id)} target="_blank" rel="noreferrer" class={linkClass}>
-        <ExternalLinkIcon className="size-4" />
-        <span>{t('moment.viewOriginal')}</span>
-      </a>
+      <div class="flex flex-wrap items-center gap-2">
+        <ShareButton
+          url={shareUrl}
+          title={heading}
+          label={t('moment.share')}
+          copiedLabel={t('moment.shareCopied')}
+          client:load
+        />
+        <a href={pageUrl(moment.id)} target="_blank" rel="noreferrer" class={linkClass}>
+          <ExternalLinkIcon className="size-4" />
+          <span>{t('moment.viewOriginal')}</span>
+        </a>
+      </div>
     </div>
     <p class="mt-4 text-sm text-muted-foreground">
       {t('moment.pairing')}:{' '}
