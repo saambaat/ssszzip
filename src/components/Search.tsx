@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { HistoryIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import type { Lang } from '../i18n/ui';
 import { localePath, useTranslations } from '../i18n/utils';
 import { createSearchEngine, type SearchDoc } from '../lib/search';
 import { loadSearchDocs } from '../lib/search-client';
 import { setSearchQuery, useSearchQuery } from '../lib/search-store';
+import { addRecentSearch, clearRecentSearches, getRecentSearches } from '../lib/recent-searches';
 import SearchOption, { searchOptionId } from './SearchOption';
 
 interface Props {
@@ -23,6 +25,7 @@ export default function Search({ lang, mode = 'dropdown' }: Props) {
   const [focused, setFocused] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [recent, setRecent] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const optionRefs = useRef(new Map<number, HTMLAnchorElement>());
 
@@ -36,6 +39,10 @@ export default function Search({ lang, mode = 'dropdown' }: Props) {
   useEffect(() => {
     if (query.trim() !== '') ensureDocs();
   }, [query, ensureDocs]);
+
+  useEffect(() => {
+    setRecent(getRecentSearches(lang));
+  }, [lang]);
 
   useEffect(() => {
     const focusInput = () => {
@@ -87,9 +94,10 @@ export default function Search({ lang, mode = 'dropdown' }: Props) {
     optionRefs.current.get(activeIndex)?.scrollIntoView({ block: 'nearest' });
   }, [activeIndex, visibleHits]);
 
-  const showPanel = mode === 'dropdown' && focused && !dismissed;
-  const activeHit = activeIndex >= 0 ? visibleHits[activeIndex] : undefined;
   const trimmed = query.trim();
+  const showPanel =
+    mode === 'dropdown' && focused && !dismissed && (trimmed !== '' || recent.length > 0);
+  const activeHit = activeIndex >= 0 ? visibleHits[activeIndex] : undefined;
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
@@ -105,10 +113,19 @@ export default function Search({ lang, mode = 'dropdown' }: Props) {
       return;
     }
 
-    if (event.key === 'Enter' && showPanel && activeHit) {
-      event.preventDefault();
-      window.location.assign(activeHit.doc.href);
-      return;
+    if (event.key === 'Enter') {
+      if (showPanel && activeHit) {
+        event.preventDefault();
+        addRecentSearch(lang, trimmed);
+        window.location.assign(activeHit.doc.href);
+        return;
+      }
+      if (mode === 'dropdown' && trimmed !== '') {
+        event.preventDefault();
+        addRecentSearch(lang, trimmed);
+        window.location.assign(`${localePath(lang, 'search')}?q=${encodeURIComponent(trimmed)}`);
+        return;
+      }
     }
 
     if (event.key === 'Escape') {
@@ -151,6 +168,7 @@ export default function Search({ lang, mode = 'dropdown' }: Props) {
         onFocus={() => {
           setFocused(true);
           setDismissed(false);
+          setRecent(getRecentSearches(lang));
           ensureDocs();
         }}
         onKeyDown={handleKeyDown}
@@ -159,7 +177,36 @@ export default function Search({ lang, mode = 'dropdown' }: Props) {
       {showPanel && (
         <div className="absolute top-full right-0 z-50 mt-2 w-full overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-lg">
           {trimmed === '' ? (
-            <p className="px-3 py-2.5 text-sm text-muted-foreground">{t('search.hint')}</p>
+            <div id="search-results" className="p-1">
+              <div className="flex items-center justify-between px-2.5 pt-1.5 pb-1">
+                <p className="text-xs font-medium text-muted-foreground">{t('search.recent')}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearRecentSearches(lang);
+                    setRecent([]);
+                    inputRef.current?.focus();
+                  }}
+                  className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {t('search.clear')}
+                </button>
+              </div>
+              {recent.map((term) => (
+                <button
+                  key={term}
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery(term);
+                    inputRef.current?.focus();
+                  }}
+                  className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm transition-colors hover:bg-accent/60"
+                >
+                  <HistoryIcon className="size-4 flex-none text-muted-foreground" />
+                  <span className="truncate">{term}</span>
+                </button>
+              ))}
+            </div>
           ) : failed ? (
             <p className="px-3 py-2.5 text-sm text-muted-foreground">{t('search.error')}</p>
           ) : !docs ? (
@@ -171,6 +218,7 @@ export default function Search({ lang, mode = 'dropdown' }: Props) {
               id="search-results"
               role="listbox"
               aria-label={t('search.label')}
+              onClick={() => addRecentSearch(lang, trimmed)}
               className="max-h-[min(70vh,24rem)] overflow-y-auto p-1"
             >
               {momentHits.length > 0 && (
@@ -182,6 +230,7 @@ export default function Search({ lang, mode = 'dropdown' }: Props) {
                     <SearchOption
                       key={`moment-${hit.doc.id}`}
                       hit={hit}
+                      query={trimmed}
                       active={hit === activeHit}
                       option
                       optionRef={(node) => {
@@ -201,6 +250,7 @@ export default function Search({ lang, mode = 'dropdown' }: Props) {
                     <SearchOption
                       key={`pairing-${hit.doc.id}`}
                       hit={hit}
+                      query={trimmed}
                       active={hit === activeHit}
                       option
                       optionRef={(node) => {

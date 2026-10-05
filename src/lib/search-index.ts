@@ -40,6 +40,10 @@ const momentDoc = (moment: Moment, lang: Lang): SearchDoc => {
     title: headingFor(moment, lang),
     subtitle: subFor(moment, lang) || undefined,
     meta: [pairing.name, ui[lang][`momentType.${moment.momentType}`]].join(' · '),
+    context: [
+      { label: ui[lang]['pairing.members'], values: pairing.members },
+      { label: ui[lang]['moment.tags'], values: moment.tags },
+    ].filter((group) => group.values.length > 0),
     search: {
       title: texts(moment.title),
       event: texts(moment.event),
