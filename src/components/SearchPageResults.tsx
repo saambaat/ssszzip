@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Lang } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
-import { createSearchEngine, type SearchDoc } from '../lib/search';
-import { loadSearchDocs } from '../lib/search-client';
+import { createSearchEngine, type SearchEngine } from '../lib/search';
+import { loadFuse, loadSearchDocs } from '../lib/search-client';
 import { useSearchQuery } from '../lib/search-store';
 import { addRecentSearch } from '../lib/recent-searches';
 import SearchOption from './SearchOption';
@@ -14,14 +14,14 @@ interface Props {
 export default function SearchPageResults({ lang }: Props) {
   const t = useTranslations(lang);
   const query = useSearchQuery();
-  const [docs, setDocs] = useState<SearchDoc[] | null>(null);
+  const [engine, setEngine] = useState<SearchEngine | null>(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    loadSearchDocs(lang)
-      .then((loaded) => {
-        if (!cancelled) setDocs(loaded);
+    Promise.all([loadSearchDocs(lang), loadFuse()])
+      .then(([loaded, { default: Fuse }]) => {
+        if (!cancelled) setEngine(createSearchEngine(loaded, Fuse));
       })
       .catch(() => {
         if (!cancelled) setFailed(true);
@@ -30,8 +30,6 @@ export default function SearchPageResults({ lang }: Props) {
       cancelled = true;
     };
   }, [lang]);
-
-  const engine = useMemo(() => (docs ? createSearchEngine(docs) : null), [docs]);
 
   const hits = useMemo(() => {
     if (!engine || query.trim() === '') return [];

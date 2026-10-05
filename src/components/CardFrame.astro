@@ -1,0 +1,33 @@
+---
+interface Props {
+  href: string;
+  badges?: string[];
+  'data-date'?: string;
+}
+
+const { href, badges = [] } = Astro.props;
+const date = Astro.props['data-date'];
+const badgeClass = 'rounded-full border px-2.5 py-0.5 text-xs text-muted-foreground';
+---
+
+<a
+  href={href}
+  data-date={date}
+  class="flex h-full flex-col overflow-hidden rounded-xl border bg-card text-card-foreground transition-colors hover:border-foreground/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+>
+  <div class="relative aspect-[4/3] flex-none bg-black" data-media>
+    <Fragment set:html={await Astro.slots.render('media')} />
+  </div>
+  <div class="flex flex-1 flex-col p-4">
+    <slot />
+    {
+      badges.length > 0 && (
+        <div class="mt-auto flex flex-wrap gap-1.5 pt-3">
+          {badges.map((badge) => (
+            <span class={badgeClass}>{badge}</span>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</a>

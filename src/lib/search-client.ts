@@ -19,3 +19,8 @@ export const loadSearchDocs = (lang: Lang): Promise<SearchDoc[]> => {
   }
   return pending;
 };
+
+let fuseModule: Promise<typeof import('fuse.js')> | undefined;
+
+export const loadFuse = (): Promise<typeof import('fuse.js')> =>
+  (fuseModule ??= import('fuse.js'));

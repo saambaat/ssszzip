@@ -1,10 +1,11 @@
 ---
 import type { Lang } from '../i18n/ui';
 import { localePath, useTranslations } from '../i18n/utils';
-import { posterUrl } from '../lib/imgur';
+import { thumbUrl } from '../lib/imgur';
 import { moments } from '../lib/moments';
 import type { Pairing } from '../lib/moment-schema';
 import { resolvePairing } from '../lib/pairings';
+import CardFrame from './CardFrame.astro';
 
 interface Props {
   pairing: Pairing;
@@ -17,31 +18,25 @@ const t = useTranslations(lang);
 const pairing = resolvePairing(pairingId, lang);
 const pairingMoments = moments.filter((moment) => moment.pairing === pairingId);
 const types = [...new Set(pairingMoments.map((moment) => moment.momentType))];
-const badgeClass = 'rounded-full border px-2.5 py-0.5 text-xs text-muted-foreground';
 ---
 
-<a
+<CardFrame
   href={localePath(lang, `/${pairingId}`)}
-  class="flex h-full flex-col overflow-hidden rounded-xl border bg-card text-card-foreground transition-colors hover:border-foreground/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+  badges={types.map((type) => t(`momentType.${type}`))}
 >
-  <div class="aspect-video flex-none bg-black">
-    <img
-      src={posterUrl(pairing.cover)}
-      alt=""
-      loading="lazy"
-      class="block h-full w-full object-cover"
-    />
-  </div>
-  <div class="flex flex-1 flex-col p-4">
-    <h2 class="text-base leading-normal font-medium">{pairing.name}</h2>
-    <p class="mt-1 text-sm text-muted-foreground">{pairing.members.join(' · ')}</p>
-    {
-      pairing.description && (
-        <p class="mt-2 line-clamp-2 text-sm text-muted-foreground">{pairing.description}</p>
-      )
-    }
-    <div class="mt-auto flex flex-wrap gap-1.5 pt-3">
-      {types.map((type) => <span class={badgeClass}>{t(`momentType.${type}`)}</span>)}
-    </div>
-  </div>
-</a>
+  <img
+    slot="media"
+    src={thumbUrl(pairing.cover)}
+    alt=""
+    loading="lazy"
+    decoding="async"
+    class="block h-full w-full object-cover"
+  />
+  <h2 class="text-base leading-normal font-medium">{pairing.name}</h2>
+  <p class="mt-1 text-sm text-muted-foreground">{pairing.members.join(' · ')}</p>
+  {
+    pairing.description && (
+      <p class="mt-2 line-clamp-2 text-sm text-muted-foreground">{pairing.description}</p>
+    )
+  }
+</CardFrame>

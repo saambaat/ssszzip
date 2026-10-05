@@ -1,6 +1,6 @@
 import { ui, type Lang, type UIKey } from '../i18n/ui';
 import { localePath } from '../i18n/utils';
-import { posterUrl } from './imgur';
+import { thumbUrl } from './imgur';
 import { headingFor, momentHref, subFor } from './moment-display';
 import { moments } from './moments';
 import { formatDate, monthName } from './months';
@@ -36,7 +36,7 @@ const momentDoc = (moment: Moment, lang: Lang): SearchDoc => {
     id: moment.id,
     type: 'moment',
     href: momentHref(moment, lang),
-    poster: posterUrl(moment.id),
+    poster: thumbUrl(moment.id),
     title: headingFor(moment, lang),
     subtitle: subFor(moment, lang) || undefined,
     meta: [pairing.name, ui[lang][`momentType.${moment.momentType}`]].join(' · '),
@@ -67,7 +67,7 @@ const pairingDoc = (pairing: Pairing, lang: Lang): SearchDoc => {
     id: pairing,
     type: 'pairing',
     href: localePath(lang, `/${pairing}`),
-    poster: posterUrl(entry.cover),
+    poster: thumbUrl(entry.cover),
     title: resolved.name,
     subtitle: resolved.members.join(' · '),
     meta: resolved.description,

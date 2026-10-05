@@ -4,8 +4,8 @@ import { HistoryIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import type { Lang } from '../i18n/ui';
 import { localePath, useTranslations } from '../i18n/utils';
-import { createSearchEngine, type SearchDoc } from '../lib/search';
-import { loadSearchDocs } from '../lib/search-client';
+import { createSearchEngine, type SearchEngine } from '../lib/search';
+import { loadFuse, loadSearchDocs } from '../lib/search-client';
 import { setSearchQuery, useSearchQuery } from '../lib/search-store';
 import { addRecentSearch, clearRecentSearches, getRecentSearches } from '../lib/recent-searches';
 import SearchOption, { searchOptionId } from './SearchOption';
@@ -19,7 +19,7 @@ const overlayLimits = { moment: 5, pairing: 3 } as const;
 export default function Search({ lang }: Props) {
   const t = useTranslations(lang);
   const query = useSearchQuery();
-  const [docs, setDocs] = useState<SearchDoc[] | null>(null);
+  const [engine, setEngine] = useState<SearchEngine | null>(null);
   const [failed, setFailed] = useState(false);
   const [focused, setFocused] = useState(false);
   const [dismissed, setDismissed] = useState(false);
@@ -29,11 +29,11 @@ export default function Search({ lang }: Props) {
   const optionRefs = useRef(new Map<number, HTMLAnchorElement>());
 
   const ensureDocs = useCallback(() => {
-    if (docs || failed) return;
-    loadSearchDocs(lang)
-      .then(setDocs)
+    if (engine || failed) return;
+    Promise.all([loadSearchDocs(lang), loadFuse()])
+      .then(([docs, { default: Fuse }]) => setEngine(createSearchEngine(docs, Fuse)))
       .catch(() => setFailed(true));
-  }, [docs, failed, lang]);
+  }, [engine, failed, lang]);
 
   useEffect(() => {
     if (query.trim() !== '') ensureDocs();
@@ -66,8 +66,6 @@ export default function Search({ lang }: Props) {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
-
-  const engine = useMemo(() => (docs ? createSearchEngine(docs) : null), [docs]);
 
   const hits = useMemo(() => {
     if (!engine || query.trim() === '') return [];
@@ -209,7 +207,7 @@ export default function Search({ lang }: Props) {
             </div>
           ) : failed ? (
             <p className="px-3 py-2.5 text-sm text-muted-foreground">{t('search.error')}</p>
-          ) : !docs ? (
+          ) : !engine ? (
             <p className="px-3 py-2.5 text-sm text-muted-foreground">{t('search.loading')}</p>
           ) : hits.length === 0 ? (
             <p className="px-3 py-2.5 text-sm text-muted-foreground">{t('search.empty')}</p>

@@ -1,10 +1,11 @@
 ---
 import type { Lang } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
-import { posterUrl, videoUrl } from '../lib/imgur';
+import { thumbUrl, videoUrl } from '../lib/imgur';
 import { headingFor, momentHref, subFor } from '../lib/moment-display';
 import type { Moment } from '../lib/moment-schema';
 import { resolvePairing } from '../lib/pairings';
+import CardFrame from './CardFrame.astro';
 
 interface Props {
   moment: Moment;
@@ -17,32 +18,24 @@ const heading = headingFor(moment, lang);
 const sub = subFor(moment, lang);
 const href = momentHref(moment, lang);
 const pairing = resolvePairing(moment.pairing, lang);
-const badgeClass = 'rounded-full border px-2.5 py-0.5 text-xs text-muted-foreground';
 ---
 
-<a
+<CardFrame
   href={href}
-  class="flex h-full flex-col overflow-hidden rounded-xl border bg-card text-card-foreground transition-colors hover:border-foreground/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
   data-date={moment.date}
+  badges={[pairing.name, t(`momentType.${moment.momentType}`)]}
 >
-  <div class="relative aspect-square flex-none bg-black" data-media>
-    <video
-      data-src={videoUrl(moment.id)}
-      data-poster={posterUrl(moment.id)}
-      data-preview
-      muted
-      loop
-      playsinline
-      preload="metadata"
-      aria-label={heading}
-      class="block h-full w-full cursor-pointer object-contain"></video>
-  </div>
-  <div class="flex flex-1 flex-col p-4">
-    <h2 class="line-clamp-2 text-base leading-normal font-medium">{heading}</h2>
-    {sub && <p class="mt-1 text-sm text-muted-foreground">{sub}</p>}
-    <div class="mt-auto flex flex-wrap gap-1.5 pt-3">
-      <span class={badgeClass}>{pairing.name}</span>
-      <span class={badgeClass}>{t(`momentType.${moment.momentType}`)}</span>
-    </div>
-  </div>
-</a>
+  <video
+    slot="media"
+    data-src={videoUrl(moment.id)}
+    data-poster={thumbUrl(moment.id)}
+    data-preview
+    muted
+    loop
+    playsinline
+    preload="none"
+    aria-label={heading}
+    class="cursor-pointer block h-full w-full object-cover"></video>
+  <h2 class="line-clamp-2 text-base leading-normal font-medium">{heading}</h2>
+  {sub && <p class="mt-1 text-sm text-muted-foreground">{sub}</p>}
+</CardFrame>

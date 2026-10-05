@@ -4,6 +4,7 @@ import MobileNav from '../components/MobileNav.tsx';
 import Search from '../components/Search.tsx';
 import Sidebar from '../components/Sidebar.astro';
 import ThemeToggle from '../components/ThemeToggle.tsx';
+import geistLatin from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
 import { defaultLang, languages, type Lang } from '../i18n/ui';
 import { asLang, localePath, stripLocale, useTranslations } from '../i18n/utils';
 import { monthKey, monthName } from '../lib/months';
@@ -58,6 +59,7 @@ const localeUrls = Object.fromEntries(
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" href={asset('favicon.ico')} sizes="48x48" />
+    <link rel="preload" as="font" type="font/woff2" href={geistLatin} crossorigin />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="description" content={description} />
