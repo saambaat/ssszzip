@@ -12,12 +12,11 @@ import SearchOption, { searchOptionId } from './SearchOption';
 
 interface Props {
   lang: Lang;
-  mode?: 'dropdown' | 'page';
 }
 
 const overlayLimits = { moment: 5, pairing: 3 } as const;
 
-export default function Search({ lang, mode = 'dropdown' }: Props) {
+export default function Search({ lang }: Props) {
   const t = useTranslations(lang);
   const query = useSearchQuery();
   const [docs, setDocs] = useState<SearchDoc[] | null>(null);
@@ -95,13 +94,12 @@ export default function Search({ lang, mode = 'dropdown' }: Props) {
   }, [activeIndex, visibleHits]);
 
   const trimmed = query.trim();
-  const showPanel =
-    mode === 'dropdown' && focused && !dismissed && (trimmed !== '' || recent.length > 0);
+  const showPanel = focused && !dismissed && (trimmed !== '' || recent.length > 0);
   const activeHit = activeIndex >= 0 ? visibleHits[activeIndex] : undefined;
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      if (mode !== 'dropdown' || visibleHits.length === 0) return;
+      if (visibleHits.length === 0) return;
       event.preventDefault();
       setActiveIndex((current) => {
         const delta = event.key === 'ArrowDown' ? 1 : -1;
@@ -120,7 +118,7 @@ export default function Search({ lang, mode = 'dropdown' }: Props) {
         window.location.assign(activeHit.doc.href);
         return;
       }
-      if (mode === 'dropdown' && trimmed !== '') {
+      if (trimmed !== '') {
         event.preventDefault();
         addRecentSearch(lang, trimmed);
         window.location.assign(`${localePath(lang, 'search')}?q=${encodeURIComponent(trimmed)}`);
@@ -154,7 +152,7 @@ export default function Search({ lang, mode = 'dropdown' }: Props) {
         type="search"
         role="combobox"
         aria-expanded={showPanel}
-        aria-controls={mode === 'dropdown' ? 'search-results' : undefined}
+        aria-controls="search-results"
         aria-activedescendant={activeHit ? searchOptionId(activeHit) : undefined}
         aria-autocomplete="list"
         aria-label={t('search.label')}
