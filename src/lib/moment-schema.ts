@@ -1,5 +1,9 @@
 import { z } from 'zod';
 import { defaultLang, languages, type Lang } from '../i18n/ui';
+import { pairingIds, pairingSchema, type Pairing } from './pairing-registry';
+import { momentTypeRegistry } from './site-data';
+
+export { pairingIds, pairingSchema, type Pairing };
 
 const localeKeys = Object.keys(languages) as [Lang, ...Lang[]];
 
@@ -16,17 +20,24 @@ export const resolveText = (value: LocalizedText | undefined, lang: Lang): strin
   return value[lang] ?? value[defaultLang] ?? Object.values(value)[0];
 };
 
-export const pairingIds = ['jjinchinz'] as const;
+export type MomentType = keyof typeof momentTypeRegistry;
 
-export const pairingSchema = z.enum(pairingIds);
+export const momentTypeEntrySchema = z.object({ label: localizedTextSchema });
 
-export type Pairing = z.infer<typeof pairingSchema>;
+export type MomentTypeEntry = z.infer<typeof momentTypeEntrySchema>;
 
-export const momentTypeIds = ['fansign'] as const;
+const momentTypes = Object.fromEntries(
+  Object.entries(momentTypeRegistry).map(([id, entry]) => [id, momentTypeEntrySchema.parse(entry)]),
+) as Record<MomentType, MomentTypeEntry>;
+
+export const momentTypeIds = Object.keys(momentTypeRegistry) as [MomentType, ...MomentType[]];
 
 export const momentTypeSchema = z.enum(momentTypeIds);
 
-export type MomentType = z.infer<typeof momentTypeSchema>;
+export { momentTypeRegistry };
+
+export const resolveMomentType = (id: MomentType, lang: Lang): string =>
+  resolveText(momentTypes[id].label, lang) ?? id;
 
 export const isRealDate = (value: string): boolean => {
   const parsed = new Date(`${value}T00:00:00Z`);

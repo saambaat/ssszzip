@@ -1,11 +1,18 @@
-import { ui, type Lang, type UIKey } from '../i18n/ui';
+import { ui, type Lang } from '../i18n/ui';
 import { localePath } from '../i18n/utils';
 import { thumbUrl } from './imgur';
 import { headingFor, momentHref, subFor } from './moment-display';
 import { moments } from './moments';
 import { formatDate, monthName } from './months';
-import type { LocalizedText, Moment, Pairing } from './moment-schema';
-import { allPairingIds, pairingRegistry, resolvePairing } from './pairings';
+import {
+  momentTypeRegistry,
+  resolveMomentType,
+  type LocalizedText,
+  type Moment,
+  type Pairing,
+} from './moment-schema';
+import { pairingRegistry } from './pairing-registry';
+import { allPairingIds, resolvePairing } from './pairings';
 import type { SearchDoc } from './search';
 
 const langs = Object.keys(ui) as Lang[];
@@ -17,8 +24,6 @@ const texts = (value: LocalizedText | undefined): string[] => {
   const values = typeof value === 'string' ? [value] : Object.values(value);
   return values.map(normalize);
 };
-
-const uiTexts = (key: UIKey): string[] => langs.map((lang) => normalize(ui[lang][key]));
 
 const memberTexts = (pairing: Pairing): string[] => {
   const entry = pairingRegistry[pairing];
@@ -39,7 +44,7 @@ const momentDoc = (moment: Moment, lang: Lang): SearchDoc => {
     poster: thumbUrl(moment.id),
     title: headingFor(moment, lang),
     subtitle: subFor(moment, lang) || undefined,
-    meta: [pairing.name, ui[lang][`momentType.${moment.momentType}`]].join(' · '),
+    meta: [pairing.name, resolveMomentType(moment.momentType, lang)].join(' · '),
     context: [
       { label: ui[lang]['pairing.members'], values: pairing.members },
       { label: ui[lang]['moment.tags'], values: moment.tags },
@@ -49,7 +54,7 @@ const momentDoc = (moment: Moment, lang: Lang): SearchDoc => {
       event: texts(moment.event),
       members: memberTexts(moment.pairing),
       pairing: [moment.pairing, ...texts(pairingRegistry[moment.pairing].name)],
-      type: [moment.momentType, ...uiTexts(`momentType.${moment.momentType}`)],
+      type: [moment.momentType, ...texts(momentTypeRegistry[moment.momentType].label)],
       tags: moment.tags.map(normalize),
       dates: [
         moment.date,

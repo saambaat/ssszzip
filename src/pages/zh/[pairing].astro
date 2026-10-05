@@ -1,0 +1,14 @@
+---
+import PairingPage from '../../components/PairingPage.astro';
+import { asLang } from '../../i18n/utils';
+import { pairingPaths } from '../../lib/pairings';
+
+export function getStaticPaths() {
+  return pairingPaths();
+}
+
+const { pairing } = Astro.props;
+const lang = asLang(Astro.currentLocale);
+---
+
+<PairingPage lang={lang} pairing={pairing} />

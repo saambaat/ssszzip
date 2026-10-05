@@ -2,12 +2,7 @@ import * as p from '@clack/prompts';
 import { z } from 'zod';
 import { languages, type Lang } from '../../src/i18n/ui';
 import { formatIssues, type LocalizedText } from '../../src/lib/moment-schema';
-import { guard, langOrder, type LocalizedMap } from './core';
-
-const toMap = (value: LocalizedText | undefined): LocalizedMap | undefined => {
-  if (value === undefined) return undefined;
-  return typeof value === 'string' ? { en: value } : { ...value };
-};
+import { asLocalizedMap, guard, langOrder, type LocalizedMap } from './core';
 
 const manualTranslate = async (
   label: string,
@@ -131,7 +126,7 @@ export const editLocalized = async (
   existing: LocalizedText | undefined,
   sourceLang: Lang,
 ): Promise<LocalizedText | undefined> => {
-  const map = toMap(existing);
+  const map = asLocalizedMap(existing);
   const initial = map?.[sourceLang] ?? '';
   const value = guard(
     await p.text({
