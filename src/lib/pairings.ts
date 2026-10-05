@@ -69,6 +69,9 @@ export const allPairingIds = Object.keys(pairingRegistry) as Pairing[];
 export const pairingPaths = () =>
   allPairingIds.map((pairing) => ({ params: { pairing }, props: { pairing } }));
 
+export const accentGradient = (colors: string[]): string =>
+  `linear-gradient(160deg, ${colors.map((color) => `${color}4d`).join(', ')}, transparent)`;
+
 export const resolvePairing = (id: Pairing, lang: Lang): ResolvedPairing => {
   const entry = pairings[id];
   const names = entry.members.flatMap((member) => resolveText(member.name, lang) ?? []);

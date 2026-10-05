@@ -1,19 +1,16 @@
 ---
-import { CalendarIcon, HomeIcon, UsersIcon } from 'lucide-react';
+import { UsersIcon } from 'lucide-react';
 import type { Lang } from '../i18n/ui';
 import { localePath, useTranslations } from '../i18n/utils';
 import type { Pairing } from '../lib/moment-schema';
-import { resolvePairing } from '../lib/pairings';
 
 interface Props {
-  years: string[];
-  pairings?: Pairing[];
-  activeYear?: string;
+  pairings: { id: Pairing; name: string }[];
   activePairing?: Pairing;
   lang: Lang;
 }
 
-const { years, pairings = [], activeYear, activePairing, lang } = Astro.props;
+const { pairings, activePairing, lang } = Astro.props;
 const t = useTranslations(lang);
 
 const itemClass =
@@ -25,47 +22,19 @@ const sectionClass = 'mt-4 mb-1 flex items-center gap-2 px-2 text-xs font-medium
   aria-label={t('nav.site')}
   class="sticky top-20 hidden max-h-[calc(100vh-6rem)] flex-col gap-1 self-start overflow-y-auto lg:flex"
 >
-  <a
-    href={localePath(lang, '/')}
-    aria-current={!activeYear && !activePairing ? 'page' : undefined}
-    class={itemClass}
-  >
-    <HomeIcon className="size-4" />
-    <span>{t('nav.home')}</span>
-  </a>
+  <p class={sectionClass}>
+    <UsersIcon className="size-4" />
+    <span>{t('nav.pairings')}</span>
+  </p>
   {
-    pairings.length > 0 ? (
-      <>
-        <p class={sectionClass}>
-          <UsersIcon className="size-4" />
-          <span>{t('nav.pairings')}</span>
-        </p>
-        {pairings.map((id) => (
-          <a
-            href={localePath(lang, `/${id}`)}
-            aria-current={activePairing === id ? 'page' : undefined}
-            class={`${itemClass} ml-6`}
-          >
-            <span>{resolvePairing(id, lang).name}</span>
-          </a>
-        ))}
-      </>
-    ) : years.length > 0 ? (
-      <>
-        <p class={sectionClass}>
-          <CalendarIcon className="size-4" />
-          <span>{t('nav.years')}</span>
-        </p>
-        {years.map((year) => (
-          <a
-            href={localePath(lang, `/${year}`)}
-            aria-current={activeYear === year ? 'page' : undefined}
-            class={`${itemClass} ml-6`}
-          >
-            <span>{year}</span>
-          </a>
-        ))}
-      </>
-    ) : null
+    pairings.map(({ id, name }) => (
+      <a
+        href={localePath(lang, `/${id}`)}
+        aria-current={activePairing === id ? 'page' : undefined}
+        class={`${itemClass} ml-6`}
+      >
+        <span>{name}</span>
+      </a>
+    ))
   }
 </nav>

@@ -10,21 +10,19 @@ import CardFrame from './CardFrame.astro';
 interface Props {
   moment: Moment;
   lang: Lang;
+  showPairing?: boolean;
 }
 
-const { moment, lang } = Astro.props;
+const { moment, lang, showPairing = true } = Astro.props;
 const t = useTranslations(lang);
 const heading = headingFor(moment, lang);
 const sub = subFor(moment, lang);
 const href = momentHref(moment, lang);
 const pairing = resolvePairing(moment.pairing, lang);
+const badges = [...(showPairing ? [pairing.name] : []), t(`momentType.${moment.momentType}`)];
 ---
 
-<CardFrame
-  href={href}
-  data-date={moment.date}
-  badges={[pairing.name, t(`momentType.${moment.momentType}`)]}
->
+<CardFrame href={href} data-date={moment.date} badges={badges}>
   <video
     slot="media"
     data-src={videoUrl(moment.id)}

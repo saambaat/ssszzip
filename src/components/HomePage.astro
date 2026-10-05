@@ -2,7 +2,6 @@
 import type { Lang } from '../i18n/ui';
 import { localePath, useTranslations } from '../i18n/utils';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { moments } from '../lib/moments';
 import { ogHomePath } from '../lib/og';
 import { allPairingIds } from '../lib/pairings';
 import PairingCard from './PairingCard.astro';
@@ -14,7 +13,6 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
-const years = [...new Set(moments.map((moment) => moment.date.slice(0, 4)))];
 const schema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
@@ -28,8 +26,6 @@ const schema = {
 <BaseLayout
   title={t('site.title')}
   lang={lang}
-  years={years}
-  pairings={allPairingIds}
   ogImage={ogHomePath(lang)}
   schema={schema}
 >

@@ -25,6 +25,16 @@ export const parseTags = (value: string): string[] =>
 
 export const today = (): string => new Date().toISOString().slice(0, 10);
 
+const dateSeparators = /[\u2010-\u2015\u2212/.\s]+/g;
+
+export const normalizeDateInput = (value: string): string => {
+  const trimmed = value.trim();
+  if (/^\d{8}$/.test(trimmed)) {
+    return `${trimmed.slice(0, 4)}-${trimmed.slice(4, 6)}-${trimmed.slice(6)}`;
+  }
+  return trimmed.replace(dateSeparators, '-').replace(/-+/g, '-');
+};
+
 export const promptOptional = async (message: string, initialValue: string): Promise<string> =>
   guard(await p.text({ message, initialValue })).trim();
 
@@ -53,16 +63,19 @@ export const promptId = async (
 export const promptDate = async (initialValue: string): Promise<string> => {
   const value = guard(
     await p.text({
-      message: 'Date (yyyy-MM-dd)',
+      message: 'Date (yyyy-MM-dd; separators optional)',
+      placeholder: 'e.g. 2026-10-03, 2026/10/03, or 20261003',
       initialValue,
       validate: (input) => {
-        const trimmed = (input ?? '').trim();
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return 'Use yyyy-MM-dd.';
-        if (!isRealDate(trimmed)) return 'Not a real calendar date.';
+        const normalized = normalizeDateInput(input ?? '');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+          return 'Use yyyy-MM-dd, yyyy/MM/dd, or yyyymmdd.';
+        }
+        if (!isRealDate(normalized)) return 'Not a real calendar date.';
       },
     }),
   );
-  return value.trim();
+  return normalizeDateInput(value);
 };
 
 export const promptPairing = async (initialValue?: Pairing): Promise<Pairing> =>

@@ -16,7 +16,6 @@ interface Props {
 const { lang, year } = Astro.props;
 const t = useTranslations(lang);
 
-const years = [...new Set(moments.map((moment) => moment.date.slice(0, 4)))];
 const yearMoments = moments.filter((moment) => moment.date.startsWith(year));
 const months = [...new Set(yearMoments.map((moment) => moment.date.slice(0, 7)))];
 const grouped = months.map((month) => ({
@@ -61,8 +60,6 @@ const schema = [
   title={`${year} · ${t('site.title')}`}
   description={`${year} · ${t('site.description')}`}
   lang={lang}
-  years={years}
-  activeYear={year}
   months={months}
   schema={schema}
 >
