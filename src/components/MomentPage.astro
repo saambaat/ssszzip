@@ -6,7 +6,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { pageUrl, posterUrl, videoUrl } from '../lib/imgur';
 import { momentHref } from '../lib/moment-display';
 import { resolveText, type Moment } from '../lib/moment-schema';
-import { moments } from '../lib/moments';
 import { ogMomentPath } from '../lib/og';
 import { resolvePairing } from '../lib/pairings';
 import { formatDate } from '../lib/months';
@@ -20,7 +19,6 @@ interface Props {
 const { moment, lang } = Astro.props;
 const t = useTranslations(lang);
 
-const years = [...new Set(moments.map((item) => item.date.slice(0, 4)))];
 const year = moment.date.slice(0, 4);
 const title = resolveText(moment.title, lang);
 const event = resolveText(moment.event, lang);
@@ -67,8 +65,7 @@ const schema = [
   description={description}
   type="article"
   lang={lang}
-  years={years}
-  activeYear={year}
+  activePairing={moment.pairing}
   ogImage={ogMomentPath(moment, lang)}
   schema={schema}
 >

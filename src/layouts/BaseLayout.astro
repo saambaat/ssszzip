@@ -9,16 +9,14 @@ import { defaultLang, languages, type Lang } from '../i18n/ui';
 import { asLang, localePath, stripLocale, useTranslations } from '../i18n/utils';
 import { monthKey, monthName } from '../lib/months';
 import type { Pairing } from '../lib/moment-schema';
+import { allPairingIds, resolvePairing } from '../lib/pairings';
 import '../styles/global.css';
 
 interface Props {
   title: string;
   description?: string;
   type?: 'website' | 'article';
-  years: string[];
-  activeYear?: string;
   activePairing?: Pairing;
-  pairings?: Pairing[];
   months?: string[];
   lang?: Lang;
   robots?: string;
@@ -26,19 +24,13 @@ interface Props {
   schema?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const {
-  title,
-  years,
-  activeYear,
-  activePairing,
-  months = [],
-  robots,
-} = Astro.props;
+const { title, activePairing, months = [], robots } = Astro.props;
 const lang = Astro.props.lang ?? asLang(Astro.currentLocale);
 const t = useTranslations(lang);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const asset = (path: string) => `${base}/${path}`;
 const path = stripLocale(Astro.url.pathname);
+const pairings = allPairingIds.map((id) => ({ id, name: resolvePairing(id, lang).name }));
 const site = Astro.site ?? Astro.url;
 const canonical = new URL(localePath(lang, path), site).href;
 const description = Astro.props.description ?? t('site.description');
@@ -110,8 +102,13 @@ const localeUrls = Object.fromEntries(
   <body class="antialiased">
     <header class="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
       <div class="flex items-center gap-3 px-4 py-3 sm:px-6">
-        <MobileNav years={years} activeYear={activeYear} lang={lang} client:load />
-        <span class="shrink-0 text-sm font-semibold">{t('site.title')}</span>
+        <MobileNav pairings={pairings} activePairing={activePairing} lang={lang} client:load />
+        <a
+          href={localePath(lang, '/')}
+          class="shrink-0 text-sm font-semibold transition-colors hover:text-muted-foreground"
+        >
+          {t('site.title')}
+        </a>
         <div class="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2 lg:max-w-md">
           <Search lang={lang} client:load />
           <LanguageSwitcher lang={lang} urls={localeUrls} client:load />
@@ -126,13 +123,7 @@ const localeUrls = Object.fromEntries(
           : 'lg:grid-cols-[12rem_minmax(0,1fr)]'
       }`}
     >
-      <Sidebar
-        years={years}
-        pairings={Astro.props.pairings}
-        activeYear={activeYear}
-        activePairing={activePairing}
-        lang={lang}
-      />
+      <Sidebar pairings={pairings} activePairing={activePairing} lang={lang} />
       <main class="min-w-0">
         <slot />
       </main>

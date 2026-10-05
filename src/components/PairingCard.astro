@@ -1,10 +1,9 @@
 ---
 import type { Lang } from '../i18n/ui';
-import { localePath, useTranslations } from '../i18n/utils';
+import { localePath } from '../i18n/utils';
 import { thumbUrl } from '../lib/imgur';
-import { moments } from '../lib/moments';
 import type { Pairing } from '../lib/moment-schema';
-import { resolvePairing } from '../lib/pairings';
+import { accentGradient, resolvePairing } from '../lib/pairings';
 import CardFrame from './CardFrame.astro';
 
 interface Props {
@@ -13,16 +12,13 @@ interface Props {
 }
 
 const { pairing: pairingId, lang } = Astro.props;
-const t = useTranslations(lang);
 
 const pairing = resolvePairing(pairingId, lang);
-const pairingMoments = moments.filter((moment) => moment.pairing === pairingId);
-const types = [...new Set(pairingMoments.map((moment) => moment.momentType))];
 ---
 
 <CardFrame
   href={localePath(lang, `/${pairingId}`)}
-  badges={types.map((type) => t(`momentType.${type}`))}
+  gradient={accentGradient(pairing.accentColors)}
 >
   <img
     slot="media"

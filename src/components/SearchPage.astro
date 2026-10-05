@@ -2,7 +2,6 @@
 import type { Lang } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { moments } from '../lib/moments';
 import SearchPageResults from './SearchPageResults.tsx';
 
 interface Props {
@@ -11,14 +10,12 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = useTranslations(lang);
-const years = [...new Set(moments.map((moment) => moment.date.slice(0, 4)))];
 ---
 
 <BaseLayout
   title={`${t('search.placeholder')} · ${t('site.title')}`}
   description={`${t('search.placeholder')} · ${t('site.description')}`}
   lang={lang}
-  years={years}
   robots="noindex"
 >
   <h1 class="text-lg font-semibold">{t('search.placeholder')}</h1>
