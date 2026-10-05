@@ -4,6 +4,7 @@ import { useTranslations } from '../i18n/utils';
 import { createSearchEngine, type SearchDoc } from '../lib/search';
 import { loadSearchDocs } from '../lib/search-client';
 import { useSearchQuery } from '../lib/search-store';
+import { addRecentSearch } from '../lib/recent-searches';
 import SearchOption from './SearchOption';
 
 interface Props {
@@ -67,7 +68,7 @@ export default function SearchPageResults({ lang }: Props) {
   }
 
   return (
-    <div className="mt-4 space-y-8">
+    <div className="mt-4 space-y-8" onClick={() => addRecentSearch(lang, trimmed)}>
       {momentHits.length > 0 && (
         <section>
           <h2 className="mb-2 text-xs font-medium text-muted-foreground">
@@ -75,7 +76,7 @@ export default function SearchPageResults({ lang }: Props) {
           </h2>
           <div className="space-y-0.5">
             {momentHits.map((hit) => (
-              <SearchOption key={`moment-${hit.doc.id}`} hit={hit} compact={false} />
+              <SearchOption key={`moment-${hit.doc.id}`} hit={hit} query={trimmed} compact={false} />
             ))}
           </div>
         </section>
@@ -87,7 +88,7 @@ export default function SearchPageResults({ lang }: Props) {
           </h2>
           <div className="space-y-0.5">
             {pairingHits.map((hit) => (
-              <SearchOption key={`pairing-${hit.doc.id}`} hit={hit} compact={false} />
+              <SearchOption key={`pairing-${hit.doc.id}`} hit={hit} query={trimmed} compact={false} />
             ))}
           </div>
         </section>

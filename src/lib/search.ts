@@ -13,6 +13,11 @@ export type SearchField =
   | 'type'
   | 'dates';
 
+export interface SearchContext {
+  label: string;
+  values: string[];
+}
+
 export interface SearchDoc {
   id: string;
   type: SearchDocType;
@@ -21,6 +26,7 @@ export interface SearchDoc {
   title: string;
   subtitle?: string;
   meta?: string;
+  context?: SearchContext[];
   /**
    * Searchable text, already normalized (NFKC, lowercase). Values are arrays so
    * every locale variant of a field can be indexed at once.

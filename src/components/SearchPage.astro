@@ -19,7 +19,6 @@ const years = [...new Set(moments.map((moment) => moment.date.slice(0, 4)))];
   description={`${t('search.placeholder')} · ${t('site.description')}`}
   lang={lang}
   years={years}
-  searchMode="page"
   robots="noindex"
 >
   <h1 class="text-lg font-semibold">{t('search.placeholder')}</h1>

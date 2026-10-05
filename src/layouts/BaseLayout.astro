@@ -20,7 +20,6 @@ interface Props {
   pairings?: Pairing[];
   months?: string[];
   lang?: Lang;
-  searchMode?: 'dropdown' | 'page';
   robots?: string;
 }
 
@@ -30,7 +29,6 @@ const {
   activeYear,
   activePairing,
   months = [],
-  searchMode = 'dropdown',
   robots,
 } = Astro.props;
 const lang = Astro.props.lang ?? asLang(Astro.currentLocale);
@@ -103,7 +101,7 @@ const localeUrls = Object.fromEntries(
         <MobileNav years={years} activeYear={activeYear} lang={lang} client:load />
         <span class="shrink-0 text-sm font-semibold">{t('site.title')}</span>
         <div class="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2 lg:max-w-md">
-          <Search lang={lang} mode={searchMode} client:load />
+          <Search lang={lang} client:load />
           <LanguageSwitcher lang={lang} urls={localeUrls} client:load />
           <ThemeToggle lang={lang} client:load />
         </div>
