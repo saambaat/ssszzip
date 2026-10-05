@@ -7,7 +7,6 @@ import ThemeToggle from '../components/ThemeToggle.tsx';
 import geistLatin from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
 import { defaultLang, languages, type Lang } from '../i18n/ui';
 import { asLang, localePath, stripLocale, useTranslations } from '../i18n/utils';
-import { monthKey, monthName } from '../lib/months';
 import type { Pairing } from '../lib/moment-schema';
 import { allPairingIds, resolvePairing } from '../lib/pairings';
 import '../styles/global.css';
@@ -17,14 +16,13 @@ interface Props {
   description?: string;
   type?: 'website' | 'article';
   activePairing?: Pairing;
-  months?: string[];
   lang?: Lang;
   robots?: string;
   ogImage?: string;
   schema?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const { title, activePairing, months = [], robots } = Astro.props;
+const { title, activePairing, robots } = Astro.props;
 const lang = Astro.props.lang ?? asLang(Astro.currentLocale);
 const t = useTranslations(lang);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -117,35 +115,12 @@ const localeUrls = Object.fromEntries(
       </div>
     </header>
     <div
-      class={`grid gap-6 px-4 py-6 sm:px-6 lg:gap-8 ${
-        months.length > 0
-          ? 'lg:grid-cols-[12rem_minmax(0,1fr)_10rem]'
-          : 'lg:grid-cols-[12rem_minmax(0,1fr)]'
-      }`}
+      class="grid gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[12rem_minmax(0,1fr)] lg:gap-8"
     >
       <Sidebar pairings={pairings} activePairing={activePairing} lang={lang} />
       <main class="min-w-0">
         <slot />
       </main>
-      {
-        months.length > 0 && (
-          <aside class="sticky top-20 hidden self-start lg:block" aria-label={t('nav.months')}>
-            <p class="mb-2 pl-3 text-xs font-medium text-muted-foreground">{t('nav.months')}</p>
-            <ul class="flex flex-col gap-0.5 border-l">
-              {months.map((month) => (
-                <li>
-                  <a
-                    href={`#${monthKey(month)}`}
-                    class="-ml-px block border-l border-transparent px-3 py-1 text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
-                  >
-                    {monthName(month, lang)}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </aside>
-        )
-      }
     </div>
     <script>
       const loadVideo = (video: HTMLVideoElement) => {

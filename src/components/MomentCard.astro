@@ -1,9 +1,8 @@
 ---
 import type { Lang } from '../i18n/ui';
-import { useTranslations } from '../i18n/utils';
 import { thumbUrl, videoUrl } from '../lib/imgur';
 import { headingFor, momentHref, subFor } from '../lib/moment-display';
-import type { Moment } from '../lib/moment-schema';
+import { resolveMomentType, type Moment } from '../lib/moment-schema';
 import { resolvePairing } from '../lib/pairings';
 import CardFrame from './CardFrame.astro';
 
@@ -14,12 +13,11 @@ interface Props {
 }
 
 const { moment, lang, showPairing = true } = Astro.props;
-const t = useTranslations(lang);
 const heading = headingFor(moment, lang);
 const sub = subFor(moment, lang);
 const href = momentHref(moment, lang);
 const pairing = resolvePairing(moment.pairing, lang);
-const badges = [...(showPairing ? [pairing.name] : []), t(`momentType.${moment.momentType}`)];
+const badges = [...(showPairing ? [pairing.name] : []), resolveMomentType(moment.momentType, lang)];
 ---
 
 <CardFrame href={href} data-date={moment.date} badges={badges}>

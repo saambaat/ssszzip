@@ -74,7 +74,7 @@ export const createBranch = (name: string): CommandResult => run('git', ['switch
 export const switchBranch = (name: string): CommandResult => run('git', ['switch', name]);
 
 export const commitDataFile = (message: string): CommandResult => {
-  const added = run('git', ['add', 'src/data/moments.json']);
+  const added = run('git', ['add', 'src/data/site.json']);
   if (!added.ok) return added;
   return run('git', ['commit', '-m', message]);
 };

@@ -1,0 +1,164 @@
+{
+  "pairings": {
+    "jjinchinz": {
+      "name": {
+        "en": "JjinChinz",
+        "ko": "찐친즈"
+      },
+      "cover": "UwtuZ6W",
+      "banner": "PaaWbmP",
+      "description": {
+        "en": "The name comes from \"찐친\" (jjin-chin), Korean slang for a true, real friend. JiWoo and YuBin have been best friends since middle school, years before tripleS brought them together.",
+        "ko": "이름은 \"진짜 친구\"라는 뜻의 신조어 \"찐친\"에서 나왔습니다. 지우와 유빈은 tripleS로 만나기 훨씬 전인 중학교 시절부터 절친이었습니다.",
+        "zh": "名字取自韩语俚语\"찐친\"（jjin-chin），意思是真正的朋友。知禹和裕彬从中学起就是挚友，远早于她们加入 tripleS。"
+      },
+      "members": [
+        {
+          "name": {
+            "en": "JiWoo",
+            "ko": "지우",
+            "zh": "知禹"
+          },
+          "fullName": {
+            "en": "Lee JiWoo",
+            "ko": "이지우",
+            "zh": "李知禹"
+          },
+          "color": "#fff924"
+        },
+        {
+          "name": {
+            "en": "YuBin",
+            "ko": "유빈",
+            "zh": "裕彬"
+          },
+          "fullName": {
+            "en": "Gong YuBin",
+            "ko": "공유빈",
+            "zh": "孔裕彬"
+          },
+          "color": "#ffe3e2"
+        }
+      ]
+    }
+  },
+  "momentTypes": {
+    "fansign": {
+      "label": {
+        "en": "Fansign",
+        "ko": "팬사인회",
+        "zh": "签售会"
+      }
+    }
+  },
+  "moments": [
+    {
+      "id": "ddRad8Y",
+      "pairing": "jjinchinz",
+      "momentType": "fansign",
+      "date": "2026-10-03",
+      "event": {
+        "en": "whosfan Fansign",
+        "ko": "Whosfan 팬사인회",
+        "zh": "Whosfan 签名会"
+      },
+      "credit": "https://x.com/Bin_C1ndy_u/status/2106372036117577774"
+    },
+    {
+      "id": "0KhiXNR",
+      "pairing": "jjinchinz",
+      "momentType": "fansign",
+      "date": "2026-10-03",
+      "event": {
+        "en": "whosfan Fansign",
+        "ko": "Whosfan 팬사인회",
+        "zh": "Whosfan 签名会"
+      },
+      "credit": "https://x.com/Bin_C1ndy_u/status/2106372036117577774"
+    },
+    {
+      "id": "RzdbK38",
+      "pairing": "jjinchinz",
+      "momentType": "fansign",
+      "date": "2026-10-03",
+      "event": {
+        "en": "whosfan Fansign",
+        "ko": "whosfan 팬사인회",
+        "zh": "whosfan 签名会"
+      },
+      "credit": "https://x.com/Bin_C1ndy_u/status/2106372036117577774"
+    },
+    {
+      "id": "K7id55V",
+      "pairing": "jjinchinz",
+      "momentType": "fansign",
+      "date": "2026-10-03",
+      "event": {
+        "en": "whosfan Fansign",
+        "ko": "whosfan 팬사인회",
+        "zh": "whosfan 签名会"
+      },
+      "credit": "https://www.youtube.com/watch?v=hewzOk9mE2s"
+    },
+    {
+      "id": "aMmtnGX",
+      "pairing": "jjinchinz",
+      "momentType": "fansign",
+      "date": "2026-06-28",
+      "event": {
+        "ko": "후즈팬 대면 팬사인회",
+        "en": "Who's Fan in-person fansign",
+        "zh": "Who's Fan 线下签售会"
+      },
+      "credit": "https://www.youtube.com/watch?v=7RyWaRKoIIo"
+    },
+    {
+      "id": "yzPKXuk",
+      "pairing": "jjinchinz",
+      "momentType": "fansign",
+      "date": "2026-06-28",
+      "event": {
+        "en": "Who's Fan in-person fansign",
+        "ko": "후즈팬 대면 팬사인회",
+        "zh": "Who's Fan 线下签售会"
+      },
+      "credit": "https://x.com/ve_0203/status/2071413886746837413"
+    },
+    {
+      "id": "wstTIV9",
+      "pairing": "jjinchinz",
+      "momentType": "fansign",
+      "date": "2026-06-21",
+      "event": {
+        "en": "WITHMUU fansign",
+        "ko": "WITHMUU 팬사인회",
+        "zh": "WITHMUU 签名会"
+      },
+      "credit": "https://x.com/Bin_C1ndy_u/status/2068688372986761259"
+    },
+    {
+      "id": "QncTOW6",
+      "pairing": "jjinchinz",
+      "momentType": "fansign",
+      "date": "2026-05-14",
+      "event": {
+        "en": "Zenith Objekt Trading Cafe",
+        "ko": "제니스 오브젝트 트레이딩 카페",
+        "zh": "Zenith Objekt 交易咖啡店"
+      },
+      "credit": "https://x.com/Gong_8Night/status/2055636102657249563"
+    },
+    {
+      "id": "zPvz7lR",
+      "pairing": "jjinchinz",
+      "momentType": "fansign",
+      "date": "2025-09-13",
+      "event": {
+        "en": "Everline Fan Signing Event",
+        "ko": "에버라인 팬사인회",
+        "zh": "Everline 签售会"
+      },
+      "credit": "https://x.com/Gong_S8/status/1966757704816357571"
+    }
+  ]
+}

@@ -1,6 +1,5 @@
 import * as p from '@clack/prompts';
-import { resolveText, type Moment } from '../../src/lib/moment-schema';
-import { guard, langOrder, type LocalizedMap } from './core';
+import { guard } from './core';
 import {
   commitDataFile,
   compareUrl,
@@ -14,49 +13,38 @@ import {
   uniqueBranchName,
 } from './git';
 
-export type MomentAction = 'add' | 'edit' | 'delete';
+export type ChangeAction = 'add' | 'edit' | 'delete';
 
-const verbs: Record<MomentAction, string> = {
+export type ChangeKind = 'moment' | 'pairing' | 'moment-type';
+
+export interface DataChange {
+  action: ChangeAction;
+  kind: ChangeKind;
+  key: string;
+  summary: string;
+  details: string[];
+}
+
+const verbs: Record<ChangeAction, string> = {
   add: 'Add',
   edit: 'Update',
   delete: 'Remove',
 };
 
-const eventSummary = (moment: Moment): string =>
-  [moment.date, resolveText(moment.event, 'en')].filter(Boolean).join(' · ');
-
-const describeLocalized = (label: string, value: LocalizedMap | undefined): string[] =>
-  value === undefined
-    ? []
-    : langOrder.map((lang) => `- ${label}.${lang}: ${value[lang] ?? '—'}`);
-
-const pullRequestBody = (action: MomentAction, moment: Moment): string => {
-  const event = typeof moment.event === 'string' ? { en: moment.event } : moment.event;
-  const title = typeof moment.title === 'string' ? { en: moment.title } : moment.title;
-  const lines = [
-    `Automated by \`bun run moments\`.`,
-    '',
-    `- action: ${action}`,
-    `- id: ${moment.id}`,
-    `- pairing: ${moment.pairing}`,
-    `- momentType: ${moment.momentType}`,
-    `- date: ${moment.date}`,
-    ...describeLocalized('event', event),
-    ...describeLocalized('title', title),
-  ];
-  if (moment.credit !== undefined) lines.push(`- credit: ${moment.credit}`);
-  if (moment.tags.length > 0) lines.push(`- tags: ${moment.tags.join(', ')}`);
-  return lines.join('\n');
+const kindLabels: Record<ChangeKind, string> = {
+  moment: 'moment',
+  pairing: 'pairing',
+  'moment-type': 'moment type',
 };
 
-export const offerPullRequest = async (action: MomentAction, moment: Moment): Promise<void> => {
+export const offerPullRequest = async (change: DataChange): Promise<void> => {
   if (!isGitRepo()) {
     p.log.warn('Not inside a git repository; skipping branch and PR.');
     return;
   }
   const base = defaultBranch();
   const original = currentBranch();
-  const branch = uniqueBranchName(`moments/${action}-${moment.id}`);
+  const branch = uniqueBranchName(`data/${change.action}-${change.kind}-${change.key}`);
   const wants = guard(
     await p.confirm({
       message: `Create branch "${branch}" and open a PR to ${base}?`,
@@ -68,7 +56,15 @@ export const offerPullRequest = async (action: MomentAction, moment: Moment): Pr
     p.log.warn(`Branching from "${original}", so the PR may include its commits.`);
   }
 
-  const message = `${verbs[action]} moment ${moment.id} (${eventSummary(moment)})`;
+  const title = `${verbs[change.action]} ${kindLabels[change.kind]} ${change.key} (${change.summary})`;
+  const body = [
+    'Automated by `bun run data`.',
+    '',
+    `- action: ${change.action}`,
+    `- entity: ${kindLabels[change.kind]}`,
+    `- key: ${change.key}`,
+    ...change.details,
+  ].join('\n');
   const spinner = p.spinner();
 
   spinner.start(`Creating branch "${branch}"...`);
@@ -80,8 +76,8 @@ export const offerPullRequest = async (action: MomentAction, moment: Moment): Pr
   }
   spinner.stop(`Created "${branch}".`);
 
-  spinner.start('Committing src/data/moments.json...');
-  const committed = commitDataFile(message);
+  spinner.start('Committing src/data/site.json...');
+  const committed = commitDataFile(title);
   if (!committed.ok) {
     spinner.stop('Commit failed.');
     p.log.error(committed.stderr);
@@ -101,12 +97,7 @@ export const offerPullRequest = async (action: MomentAction, moment: Moment): Pr
   spinner.stop('Pushed.');
 
   spinner.start('Opening the pull request...');
-  const pr = openPullRequest({
-    base,
-    branch,
-    title: message,
-    body: pullRequestBody(action, moment),
-  });
+  const pr = openPullRequest({ base, branch, title, body });
   if (pr.ok) {
     spinner.stop('Pull request opened.');
     p.log.success(pr.stdout);

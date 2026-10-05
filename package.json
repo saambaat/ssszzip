@@ -8,7 +8,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "astro": "astro",
-    "moments": "bun scripts/moments/index.ts"
+    "data": "bun scripts/data/index.ts"
   },
   "dependencies": {
     "@astrojs/react": "^7.0.0",

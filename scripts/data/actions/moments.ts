@@ -1,6 +1,7 @@
 import * as p from '@clack/prompts';
-import { momentSchema } from '../../src/lib/moment-schema';
-import { guard } from './core';
+import { momentSchema, resolveText, type Moment } from '../../../src/lib/moment-schema';
+import { describeLocalized, guard } from '../core';
+import { offerPullRequest, type ChangeAction, type DataChange } from '../publish';
 import {
   parseTags,
   pickMoment,
@@ -13,14 +14,36 @@ import {
   promptSourceLang,
   showPreview,
   today,
-} from './prompts';
-import { loadMoments, saveMoments } from './store';
-import { editLocalized, translateInteractive } from './translate';
-import { offerPullRequest } from './publish';
+} from '../prompts';
+import { loadSite, saveSite } from '../store';
+import { editLocalized, translateInteractive } from '../translate';
+
+const eventSummary = (moment: Moment): string =>
+  [moment.date, resolveText(moment.event, 'en')].filter(Boolean).join(' · ');
+
+const momentChange = (action: ChangeAction, moment: Moment): DataChange => {
+  const details = [
+    `- id: ${moment.id}`,
+    `- pairing: ${moment.pairing}`,
+    `- momentType: ${moment.momentType}`,
+    `- date: ${moment.date}`,
+    ...describeLocalized('event', moment.event),
+    ...describeLocalized('title', moment.title),
+  ];
+  if (moment.credit !== undefined) details.push(`- credit: ${moment.credit}`);
+  if (moment.tags.length > 0) details.push(`- tags: ${moment.tags.join(', ')}`);
+  return {
+    action,
+    kind: 'moment',
+    key: moment.id,
+    summary: eventSummary(moment),
+    details,
+  };
+};
 
 export const addMoment = async (): Promise<void> => {
-  const items = await loadMoments();
-  const taken = new Set(items.map((moment) => moment.id));
+  const site = await loadSite();
+  const taken = new Set(site.moments.map((moment) => moment.id));
   const id = await promptId('', taken);
   const pairing = await promptPairing();
   const momentType = await promptMomentType();
@@ -48,20 +71,20 @@ export const addMoment = async (): Promise<void> => {
     p.log.info('Discarded.');
     return;
   }
-  await saveMoments([...items, draft]);
-  p.log.success(`Saved ${draft.id} to src/data/moments.json.`);
-  await offerPullRequest('add', draft);
+  await saveSite({ ...site, moments: [...site.moments, draft] });
+  p.log.success(`Saved moment ${draft.id} to src/data/site.json.`);
+  await offerPullRequest(momentChange('add', draft));
 };
 
 export const editMoment = async (): Promise<void> => {
-  const items = await loadMoments();
-  if (items.length === 0) {
+  const site = await loadSite();
+  if (site.moments.length === 0) {
     p.log.warn('No moments to edit.');
     return;
   }
-  const target = await pickMoment('Which moment do you want to edit?', items);
+  const target = await pickMoment('Which moment do you want to edit?', site.moments);
   const sourceLang = await promptSourceLang();
-  const id = await promptId(target.id, new Set(items.map((moment) => moment.id)), target.id);
+  const id = await promptId(target.id, new Set(site.moments.map((moment) => moment.id)), target.id);
   const pairing = await promptPairing(target.pairing);
   const momentType = await promptMomentType(target.momentType);
   const date = await promptDate(target.date);
@@ -87,25 +110,28 @@ export const editMoment = async (): Promise<void> => {
     p.log.info('Discarded.');
     return;
   }
-  await saveMoments(items.map((moment) => (moment.id === target.id ? draft : moment)));
+  await saveSite({
+    ...site,
+    moments: site.moments.map((moment) => (moment.id === target.id ? draft : moment)),
+  });
   p.log.success(`Updated ${draft.id}.`);
-  await offerPullRequest('edit', draft);
+  await offerPullRequest(momentChange('edit', draft));
 };
 
 export const deleteMoment = async (): Promise<void> => {
-  const items = await loadMoments();
-  if (items.length === 0) {
+  const site = await loadSite();
+  if (site.moments.length === 0) {
     p.log.warn('No moments to delete.');
     return;
   }
-  const target = await pickMoment('Which moment do you want to delete?', items);
+  const target = await pickMoment('Which moment do you want to delete?', site.moments);
   showPreview(target);
   const confirmed = guard(await p.confirm({ message: `Delete ${target.id}? This cannot be undone.` }));
   if (!confirmed) {
     p.log.info('Kept.');
     return;
   }
-  await saveMoments(items.filter((moment) => moment.id !== target.id));
+  await saveSite({ ...site, moments: site.moments.filter((moment) => moment.id !== target.id) });
   p.log.success(`Deleted ${target.id}.`);
-  await offerPullRequest('delete', target);
+  await offerPullRequest(momentChange('delete', target));
 };
