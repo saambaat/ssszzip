@@ -102,6 +102,7 @@ export default function SearchOption({
         src={doc.poster}
         alt=""
         loading="lazy"
+        decoding="async"
         className={`${compact ? 'size-10' : 'size-14'} flex-none rounded-md bg-black object-cover`}
       />
       <span className="min-w-0">

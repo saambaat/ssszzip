@@ -1,5 +1,3 @@
-import Fuse from 'fuse.js';
-
 export type SearchDocType = 'moment' | 'pairing';
 
 export type SearchField =
@@ -83,7 +81,10 @@ const matchLevel = (doc: SearchDoc, token: string): number => {
   return level;
 };
 
-export const createSearchEngine = (docs: SearchDoc[]): SearchEngine => {
+export const createSearchEngine = (
+  docs: SearchDoc[],
+  Fuse: typeof import('fuse.js').default,
+): SearchEngine => {
   const fuse = new Fuse(docs, {
     includeScore: true,
     threshold: 0.3,
